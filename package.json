@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "@supabase/supabase-js": "^2.31.0",
+    "discord.js": "^14.12.1",
+    "dotenv": "^16.3.1",
+    "ts-mixer": "^6.0.3"
+  },
+  "devDependencies": {
+    "eslint": "^8.46.0"
+  },
+  "name": "BotangIna",
+  "version": "1.0.0",
+  "description": "sample",
+  "main": "bot.js",
+  "author": "kervy cantos",
+  "license": "MIT"
+}
