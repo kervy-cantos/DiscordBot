@@ -3,11 +3,11 @@ const supabase = require("../../database/connect");
 const registerUser = async (memberId) => {
   const { data: user } = await supabase
     .from("Users")
-    .select("*")
+    .select()
     .eq("discordId", memberId);
   if (user.length == 0) {
-    return true;
+    return { status: true, userData: {} };
   }
-  return false;
+  return { status: false, userData: user };
 };
 module.exports = registerUser;

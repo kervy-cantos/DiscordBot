@@ -3,7 +3,8 @@ require("dotenv").config();
 
 const supabase = createClient(
   "https://ufgpjfyvftoirwgabivo.supabase.co",
-  process.env.SUPABASE_KEY
+  process.env.SUPABASE_KEY,
+  { auth: { persistSession: false } }
 );
 
 module.exports = supabase;

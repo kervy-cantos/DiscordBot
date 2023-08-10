@@ -24,7 +24,7 @@ module.exports = {
     const checkIfRegistered = registerUser(interaction.member.id);
     const profilePic = interaction.member.displayAvatarURL();
 
-    if (checkIfRegistered == true) {
+    if (checkIfRegistered.status == true) {
       let userData = {
         discordId: interaction.member.id,
         discordNickName: interaction.member.displayName,

@@ -1,4 +1,10 @@
-const { Client, Events, GatewayIntentBits, Collection } = require("discord.js");
+const {
+  Client,
+  Events,
+  GatewayIntentBits,
+  Collection,
+  Collector,
+} = require("discord.js");
 const fs = require("node:fs");
 const path = require("node:path");
 const { supabase } = require(path.join(__dirname, "database/connect.js"));
@@ -7,7 +13,13 @@ require("dotenv").config();
 
 const token = process.env.TOKEN;
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
+});
 
 client.commands = new Collection();
 const commands = [];
@@ -32,6 +44,7 @@ for (const folder of commandFolders) {
     }
   }
 }
+
 const eventsPath = path.join(__dirname, "events");
 const eventFiles = fs
   .readdirSync(eventsPath)
@@ -46,5 +59,11 @@ for (const file of eventFiles) {
     client.on(event.name, (...args) => event.execute(...args));
   }
 }
+
+client.on("messageCreate", async function (message) {
+  if (message.author.bot) return;
+
+  message.channel.send("hey");
+});
 
 client.login(token);
