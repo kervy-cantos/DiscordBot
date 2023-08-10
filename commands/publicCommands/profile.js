@@ -70,7 +70,7 @@ module.exports = {
       <body>
         <div class="app">
           <img src="${interaction.member.displayAvatarURL()}" />
-          <h4>Welcome ${interaction.member.displayName}</h4>
+          <h4>${interaction.member.displayName}</h4>
           <div> <p class="lvl-text">LVL ${userData[0]?.lvl}<br> ${
         userData[0].currentExp
       }/${userData[0]?.maxExp} (${

@@ -7,18 +7,15 @@ const {
 } = require("discord.js");
 const fs = require("node:fs");
 const path = require("node:path");
+const internal = require("node:stream");
 const { supabase } = require(path.join(__dirname, "database/connect.js"));
 
 require("dotenv").config();
 
-const token = process.env.TOKEN;
+const { TOKEN, CHATGPT_KEY } = process.env;
 
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-  ],
+  intents: 32767,
 });
 
 client.commands = new Collection();
@@ -60,10 +57,4 @@ for (const file of eventFiles) {
   }
 }
 
-client.on("messageCreate", async function (message) {
-  if (message.author.bot) return;
-
-  message.channel.send("hey");
-});
-
-client.login(token);
+client.login(TOKEN);

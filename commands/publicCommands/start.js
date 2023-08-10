@@ -1,16 +1,6 @@
 const { SlashCommandBuilder, Embed, EmbedBuilder } = require("discord.js");
 const supabase = require("../../database/connect");
-
-const registerUser = async (memberId) => {
-  const { data: user } = await supabase
-    .from("Users")
-    .select("*")
-    .eq("discordId", memberId);
-  if (user.length == 0) {
-    return true;
-  }
-  return false;
-};
+const registerUser = require("../../utils/helperFunctions/checkUser");
 
 const embed = new EmbedBuilder();
 
@@ -21,7 +11,7 @@ module.exports = {
     .setDescription("Just a test command"),
   async execute(interaction) {
     await interaction.deferReply();
-    const checkIfRegistered = registerUser(interaction.member.id);
+    const checkIfRegistered = await registerUser(interaction.member.id);
     const profilePic = interaction.member.displayAvatarURL();
 
     if (checkIfRegistered.status == true) {
@@ -33,7 +23,9 @@ module.exports = {
 
       const response = await supabase.from("Users").insert(userData);
       console.log(response);
-      embed.setColor("DarkPurple").setDescription("Welcome");
+      embed
+        .setColor("DarkPurple")
+        .setTitle(`Welcome ${interaction.member.displayName}`);
       interaction.editReply({ embeds: [embed] });
     } else {
       embed
