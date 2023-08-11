@@ -27,6 +27,7 @@ module.exports = {
     }
     try {
       await interaction.deferReply();
+      embed.data.fields = [];
 
       const { data: monsterData } = await supabase
         .from("Monsters")
@@ -89,19 +90,23 @@ module.exports = {
                 inline: false,
               });
             });
-            embed.data.fields[1] = {
-              name: "Health",
-              value: `${monsterHp}`,
-            };
+
             message.reactions.removeAll();
             interaction.editReply({ embeds: [embed], ephemeral: true });
             const logs = {
               monsterId: monsterData[0].id,
               userId: interaction.member.id,
               remainingHp: monsterHp,
-              isActive: true,
+              isActive: monsterHp > 0 ?? false,
             };
-            return await supabase.from("ActiveBattleLogs").insert(logs);
+            if (monsterHp == 0) {
+              const newLogs = battleLog.map((log) => {
+                return { ...log, isActive: false };
+              });
+              return await supabase.from("ActiveBattleLogs").upsert(newLogs);
+            } else {
+              return await supabase.from("ActiveBattleLogs").insert(logs);
+            }
           }
         })
         .catch((collected) => {
