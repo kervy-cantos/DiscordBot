@@ -1,11 +1,13 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const registerUser = require("../../utils/helperFunctions/checkUser");
 const supabase = require("../../database/connect");
+const returnExp = require("../../utils/helperFunctions/returnExp");
 
 const embed = new EmbedBuilder();
 
 module.exports = {
   name: "farm",
+  cooldown: 5,
   data: new SlashCommandBuilder()
     .setName("farm")
     .setDescription("Just a test command"),
@@ -19,14 +21,13 @@ module.exports = {
       .eq("monsterId", monsterId)
       .eq("isActive", true)
       .order("timeStamp", { ascending: false });
-    console.log(battleLog);
-    let monsterData = [];
 
+    let monsterData = [];
+    await interaction.deferReply();
     if (status == true) {
       return interaction.editReply("You are not registered");
     }
     try {
-      await interaction.deferReply();
       embed.data.fields = [];
 
       const { data: monsterData } = await supabase
@@ -91,7 +92,6 @@ module.exports = {
               });
             });
 
-            message.reactions.removeAll();
             interaction.editReply({ embeds: [embed], ephemeral: true });
             const logs = {
               monsterId: monsterData[0].id,
@@ -103,14 +103,22 @@ module.exports = {
               const newLogs = battleLog.map((log) => {
                 return { ...log, isActive: false };
               });
-              return await supabase.from("ActiveBattleLogs").upsert(newLogs);
+              returnExp(attackerIds, monsterData[0].id);
+              await supabase.from("ActiveBattleLogs").upsert(newLogs);
+              embed.setFooter({
+                text: "dead",
+                iconURL: monsterData[0].imageUrl,
+              });
+              return message.reply({ embeds: [embed] });
             } else {
               return await supabase.from("ActiveBattleLogs").insert(logs);
             }
           }
+          message.reactions.removeAll();
         })
         .catch((collected) => {
           console.log(collected);
+          message.reactions.removeAll();
         });
     } catch (error) {
       console.log(error);

@@ -21,9 +21,6 @@ module.exports = {
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: message }],
     };
-    if (message.toLowerCase().startsWith("code ")) {
-      body.messages[0].content = `Please enclose your reply on double backticks. ${message}`;
-    }
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
