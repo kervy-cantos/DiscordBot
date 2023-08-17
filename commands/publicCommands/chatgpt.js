@@ -2,6 +2,7 @@ const { SlashCommandBuilder, SlashCommandStringOption } = require("discord.js");
 const dotenv = require("dotenv").config();
 
 const { CHATGPT_KEY } = process.env;
+let timeouts = [];
 
 module.exports = {
   name: "chatgpt",
@@ -15,6 +16,14 @@ module.exports = {
         .setRequired(true)
     ),
   async execute(interaction) {
+    if (timeouts.includes(true)) {
+      return await interaction.reply("```Command on cooldown```");
+    }
+    timeouts.push(true);
+
+    setTimeout(() => {
+      timeouts = [];
+    }, 30000);
     const message = interaction.options.getString("message");
     await interaction.deferReply();
     let body = {

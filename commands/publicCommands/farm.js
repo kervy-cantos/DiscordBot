@@ -4,14 +4,29 @@ const supabase = require("../../database/connect");
 const returnExp = require("../../utils/helperFunctions/returnExp");
 
 const embed = new EmbedBuilder();
+let timeouts = [];
 
 module.exports = {
   name: "farm",
-  cooldown: 5,
   data: new SlashCommandBuilder()
     .setName("farm")
     .setDescription("Just a test command"),
   async execute(interaction) {
+    if (timeouts.includes(true)) {
+      await interaction.reply({
+        content:
+          "```Command on cooldown. Please wait for 20 seconds before using the command again```",
+        ephemeral: true,
+      });
+
+      return;
+    } else {
+      timeouts.push(true);
+      setTimeout(() => {
+        timeouts = [];
+      }, 20000);
+    }
+
     const monsterId = 1;
     const { status, userData } = await registerUser(interaction.member.id);
     const { data: battleLog } = await supabase
@@ -29,7 +44,7 @@ module.exports = {
     }
     try {
       embed.data.fields = [];
-
+      embed.data.footer = [];
       const { data: monsterData } = await supabase
         .from("Monsters")
         .select()
@@ -83,16 +98,37 @@ module.exports = {
               battleLog.length > 0
                 ? battleLog[0]?.remainingHp
                 : monsterData[0].hp;
+            const newEmbed = new EmbedBuilder();
+            newEmbed
+              .setThumbnail(monsterData[0].imageUrl)
+              .setTitle(monsterData[0].name)
+              .setColor("Red");
             attackersData.map(async (user) => {
               monsterHp -= user.maxDmg;
-              embed.addFields({
+              newEmbed.addFields({
                 name: `Attackers:`,
                 value: user.discordUserName,
                 inline: false,
               });
             });
+            newEmbed.addFields(
+              {
+                name: "LvL",
+                value: String(monsterData[0].lvl),
+                inline: true,
+              },
+              {
+                name: "Health",
+                value: String(monsterHp),
+                inline: true,
+              }
+            );
 
-            interaction.editReply({ embeds: [embed], ephemeral: true });
+            await interaction.editReply({
+              embeds: [newEmbed],
+              ephemeral: true,
+            });
+
             const logs = {
               monsterId: monsterData[0].id,
               userId: interaction.member.id,
@@ -105,19 +141,20 @@ module.exports = {
               });
               returnExp(attackerIds, monsterData[0].id);
               await supabase.from("ActiveBattleLogs").upsert(newLogs);
-              embed.setFooter({
+              newEmbed.setFooter({
                 text: "dead",
                 iconURL: monsterData[0].imageUrl,
               });
-              return message.reply({ embeds: [embed] });
             } else {
               return await supabase.from("ActiveBattleLogs").insert(logs);
             }
+            return message.reply({ embeds: [newEmbed] });
           }
+        })
+        .finally(() => {
           message.reactions.removeAll();
         })
         .catch((collected) => {
-          console.log(collected);
           message.reactions.removeAll();
         });
     } catch (error) {
