@@ -13,6 +13,7 @@ module.exports = {
   async execute(interaction) {
     await interaction.deferReply();
     const { status, userData } = await registerUser(interaction.member.id);
+
     if (status == true) {
       embed.setDescription("You are not yet registered.");
       interaction.editReply({ embeds: [embed] });
@@ -73,9 +74,10 @@ module.exports = {
           <h4>${interaction.member.displayName}</h4>
           <div> <p class="lvl-text">LVL ${userData[0]?.lvl}<br> ${
         userData[0].currentExp
-      }/${userData[0]?.maxExp} (${
-        (userData[0].currentExp / userData[0]?.maxExp) * 100
-      }%)</p></div>
+      }/${userData[0]?.nextExp} (${(
+        (userData[0].currentExp / userData[0]?.nextExp) *
+        100
+      ).toFixed(2)}%)</p></div>
          
         </div>
         <div class="stats">
@@ -84,7 +86,9 @@ module.exports = {
             </head>
             <body>
             <tr>
-              <th>HP :</th><td> ${userData[0].hpRemain}/${userData[0].hp}</td>
+              <th>HP :</th><td> ${userData[0].hpRemain}/${
+        userData[0].maxHp
+      }</td>
             </tr>
             <tr>
               <th>DMG :</th><td>${userData[0].minDmg} - ${

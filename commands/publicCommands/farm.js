@@ -72,9 +72,18 @@ module.exports = {
       const fetchAttackersData = async (arr) => {
         const { data: attackersData } = await supabase
           .from("Users")
-          .select()
+          .select(`*, lvl("*")`)
           .in("discordId", arr);
-        return attackersData;
+        return attackersData.map((userdata) => {
+          return {
+            ...userdata,
+            maxHp: userdata.lvl.maxHp,
+            maxDmg: userdata.maxDmg + userdata.lvl.maxDmg,
+            minDmg: userdata.minDmg + userdata.lvl.maxDmg,
+            nextExp: userdata.lvl.nextExp,
+            lvl: userdata.lvl.id,
+          };
+        });
       };
       await message.react("⚔️");
 
@@ -104,7 +113,11 @@ module.exports = {
               .setTitle(monsterData[0].name)
               .setColor("Red");
             attackersData.map(async (user) => {
-              monsterHp -= user.maxDmg;
+              const userDmg = Math.floor(
+                Math.random() * (user.maxDmg - user.minDmg) + user.minDmg
+              );
+              console.log(userDmg);
+              monsterHp -= userDmg;
               newEmbed.addFields({
                 name: `Attackers:`,
                 value: user.discordUserName,
@@ -119,7 +132,7 @@ module.exports = {
               },
               {
                 name: "Health",
-                value: String(monsterHp),
+                value: String(monsterHp < 0 ? 0 : monsterHp),
                 inline: true,
               }
             );
@@ -135,7 +148,7 @@ module.exports = {
               remainingHp: monsterHp,
               isActive: monsterHp > 0 ?? false,
             };
-            if (monsterHp == 0) {
+            if (monsterHp <= 0) {
               const newLogs = battleLog.map((log) => {
                 return { ...log, isActive: false };
               });

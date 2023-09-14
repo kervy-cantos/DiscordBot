@@ -22,12 +22,13 @@ module.exports = {
       };
 
       const response = await supabase.from("Users").insert(userData);
-      console.log(response);
+
       embed
         .setColor("DarkPurple")
         .setTitle(`Welcome ${interaction.member.displayName}`);
       interaction.editReply({ embeds: [embed] });
     } else {
+      console.log(checkIfRegistered.userData)
       embed
         .setTitle("Hello " + interaction.member.displayName)
         .setColor("Red")
